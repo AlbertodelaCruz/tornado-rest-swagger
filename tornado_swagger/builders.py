@@ -98,15 +98,23 @@ def extract_parameters_names(handler, parameters_count):
                 if set(arg) != {"_"}:
                     parameters[i] = arg
 
+    parameters = filter(lambda f: f != "{?}", parameters)
+
     return parameters
+
+
+def extract_parameters_from_route_pattern(route_pattern):
+    return re.findall(r'<([^>]*)>', route_pattern)
 
 
 def format_handler_path(target, route_pattern, groups):
     brackets_regex = re.compile(r"\(.*?\)")
     parameters = extract_parameters_names(target, groups)
+    parameters_from_route_pattern = extract_parameters_from_route_pattern(route_pattern)
+    total_parameters = parameters + parameters_from_route_pattern
 
     for i, entity in enumerate(brackets_regex.findall(route_pattern)):
-        route_pattern = route_pattern.replace(entity, "{%s}" % parameters[i], 1)
+        route_pattern = route_pattern.replace(entity, "{%s}" % total_parameters[i], 1)
 
     return route_pattern[:-1]
 
